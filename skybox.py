@@ -24,6 +24,7 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
         title = movie.find(name="h2", class_="entry-title")
         if title:
             title = title.text.strip()
+            print("Movie: ", title)
             movie_info = {
                 info.label.text.replace(":", ""): info.span.text
                 for info in movie.find(name="div", class_="entry-content").find(
@@ -43,22 +44,12 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
                     skip_movie = True
                 else:
                     # TODO add as validator model for category field
-                    cleaned = clean_categories(m.category).strip()
-                    m.category = cleaned
+                    m.category = clean_categories(m.category.lower()).strip()
             if not skip_movie:
                 movies.append(m)
         else:
             break
     return movies
-
-
-def cleanup_movies(in_cinema: List[Movie], premieres: List[Movie]) -> List[Movie]:
-    """
-    Clean up movies list.
-    """
-    for movie in premieres:
-        if movie in in_cinema:
-            premieres.remove(movie)
 
 
 in_cinema = get_movies(SKYBOX_NOW)

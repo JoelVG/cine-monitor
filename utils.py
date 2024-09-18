@@ -41,7 +41,7 @@ def clean_categories(text: str) -> str:
     Remove banned words category.
     """
     return ", ".join(
-        word for word in text.split(",") if word.strip() not in NOT_CATEGORIES
+        word.strip() for word in text.split(",") if word.strip() not in NOT_CATEGORIES
     )
 
 

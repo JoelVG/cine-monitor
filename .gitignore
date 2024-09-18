@@ -23,3 +23,5 @@ __pycache__
 
 # Misc
 .ruff_cache
+skybox.csv
+prime.csv
