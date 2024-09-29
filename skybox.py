@@ -1,9 +1,16 @@
-import requests
+from requests import get as request_get
 from bs4 import BeautifulSoup
 from models.movie import Movie
 from typing import List
-from constants import SKYBOX_NOW, SKYBOX_PREM
-from utils import pydantic_to_csv, extract_time, clean_categories
+from constants import SKYBOX_NOW, SKYBOX_PREM, SKYBOX_OUTPUT, SKYBOX_TITLE_TARGET
+from utils import (
+    pydantic_to_csv,
+    extract_time,
+    clean_categories,
+    file_exists,
+    same_movies,
+    get_movies_titles,
+)
 
 
 def get_movies(url: str, in_cinema=True) -> List[Movie]:
@@ -11,12 +18,12 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     Get movies from a given URL.
     """
     movies = []
-    response = requests.get(url)
+    response = request_get(url)
     html_content = response.content
 
     soup = BeautifulSoup(html_content, "html.parser")
 
-    movies_ = soup.find(name="div", class_="list-content")
+    movies_ = soup.find(name="div", class_=SKYBOX_TITLE_TARGET)
     print(f"Found {len(movies_)} movies!")
     for movie in movies_:
         skip_movie = False
@@ -52,7 +59,30 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     return movies
 
 
-in_cinema = get_movies(SKYBOX_NOW)
-premieres = get_movies(SKYBOX_PREM, in_cinema=False)
-in_cinema.extend(premieres)
-pydantic_to_csv(in_cinema, "skybox")
+def get_all_movies() -> List[Movie]:
+    """
+    Get all movies from in cinema and premier.
+    """
+    in_cinema = get_movies(SKYBOX_NOW)
+    premieres = get_movies(SKYBOX_PREM, in_cinema=False)
+    return in_cinema + premieres
+
+
+def get_all_movies_titles() -> List[str]:
+    """
+    Get all movies titles from in cinema and premier.
+    """
+    in_cinema = get_movies_titles(SKYBOX_NOW, SKYBOX_TITLE_TARGET)
+    premieres = get_movies_titles(SKYBOX_PREM, SKYBOX_TITLE_TARGET)
+    return in_cinema | premieres
+
+
+# Verify if we already have the movies
+if file_exists(SKYBOX_OUTPUT):
+    if same_movies(get_all_movies_titles(), SKYBOX_OUTPUT):
+        print("No new movies for Skybox")
+    else:
+        pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
+else:
+    # First time getting the movies
+    pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
