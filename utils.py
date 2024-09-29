@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List
 from constants import NOT_CATEGORIES
 import csv
+import glob
 
 
 def extract_time(time: str) -> str:
@@ -15,7 +16,7 @@ def extract_time(time: str) -> str:
     return f"{h:02d}:{m:02d}"
 
 
-def pydantic_to_csv(data: List[BaseModel], filename: str = "movies"):
+def pydantic_to_csv(data: List[BaseModel], filename: str):
     """
     Function to convert list of Pydantic objects to CSV
     """
@@ -23,17 +24,20 @@ def pydantic_to_csv(data: List[BaseModel], filename: str = "movies"):
         print("The list is empty. No CSV file will be created.")
         return
 
-    fieldnames = list(data[0].dict().keys())
+    fieldnames = list(data[0].model_dump.keys())
+    movies_title = [obj.title for obj in data]
+    if verify_updated_movies(movies_title, filename):
+        with open(f"{filename}.csv", mode="w", newline="") as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
 
-    with open(filename, mode="w", newline="") as file:
-        writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
 
-        writer.writeheader()
+            for obj in data:
+                writer.writerow(obj.model_dump)
 
-        for obj in data:
-            writer.writerow(obj.dict())
-
-    print(f"CSV file '{filename}' has been created successfully.")
+        print(f"CSV file '{filename}.csv' has been created successfully.")
+    else:
+        print(f"Movies from '{filename}' are already up to date.")
 
 
 def clean_categories(text: str) -> str:
@@ -45,22 +49,15 @@ def clean_categories(text: str) -> str:
     )
 
 
-# # Define a Pydantic model
-# class Person(BaseModel):
-#     name: str
-#     age: int
-#     city: str
-
-# # Create a list of Person objects
-# people = [
-#     Person(name="Alice", age=30, city="New York"),
-#     Person(name="Bob", age=25, city="Los Angeles"),
-#     Person(name="Charlie", age=35, city="Chicago")
-# ]
-
-# # Convert the list of Person objects to CSV
-# pydantic_to_csv(people, "people.csv")
-
-
-# print(extract_time("01 hours 46 minutes"))
-# print(clean_categories("Drama,  En cartelera,  Estrenos"))
+def verify_updated_movies(movies: List[str], cine: str) -> bool:
+    """
+    Verify if the movies have been updated.
+    """
+    files = glob.glob(f"{cine}*.csv")
+    if not files:
+        print("File not found.")
+        return False
+    with open(files[0], mode="r") as file:
+        reader = csv.DictReader(file)
+        existing_movies = set(row["title"] for row in reader)
+        return set(movies) == existing_movies

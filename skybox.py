@@ -55,12 +55,4 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
 in_cinema = get_movies(SKYBOX_NOW)
 premieres = get_movies(SKYBOX_PREM, in_cinema=False)
 in_cinema.extend(premieres)
-pydantic_to_csv(in_cinema, "skybox.csv")
-
-# print("In cinema movies: ")
-# for movie in in_cinema:
-#     print(movie)
-# print("**"*60)
-# print("Premieres: ")
-# for movie in premieres:
-#     print(movie)
+pydantic_to_csv(in_cinema, "skybox")

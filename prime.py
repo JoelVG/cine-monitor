@@ -55,4 +55,4 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
 in_cinema = get_movies(PRIME_NOW)
 premieres = get_movies(PRIME_PREM, in_cinema=False)
 in_cinema.extend(premieres)
-pydantic_to_csv(in_cinema, "prime.csv")
+pydantic_to_csv(in_cinema, "prime")

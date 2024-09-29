@@ -1,3 +1,4 @@
 pydantic==2.9
 beautifulsoup4==4.12.2
 pre-commit
+requests
