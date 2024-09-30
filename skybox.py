@@ -68,7 +68,7 @@ def get_all_movies() -> List[Movie]:
     return in_cinema + premieres
 
 
-def get_all_movies_titles() -> List[str]:
+def get_all_movies_titles() -> set[str]:
     """
     Get all movies titles from in cinema and premier.
     """
