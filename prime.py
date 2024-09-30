@@ -1,9 +1,16 @@
-import requests
 from bs4 import BeautifulSoup
 from models.movie import Movie
 from typing import List
-from constants import PRIME_NOW, PRIME_PREM
-from utils import pydantic_to_csv, extract_time, clean_categories
+from constants import PRIME_NOW, PRIME_PREM, PRIM_OUTPUT
+from utils import (
+    pydantic_to_csv,
+    extract_time,
+    clean_categories,
+    file_exists,
+    same_movies,
+    get_movies_titles,
+    get_request,
+)
 
 
 def get_movies(url: str, in_cinema=True) -> List[Movie]:
@@ -11,11 +18,7 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     Get movies from a given URL.
     """
     movies = []
-    # We need this header to mimic a browser
-    headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-    }
-    response = requests.get(url, headers=headers)
+    response = get_request(url)
     html_content = response.content
 
     soup = BeautifulSoup(html_content, "html.parser")
@@ -52,7 +55,30 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     return movies
 
 
-in_cinema = get_movies(PRIME_NOW)
-premieres = get_movies(PRIME_PREM, in_cinema=False)
-in_cinema.extend(premieres)
-pydantic_to_csv(in_cinema, "prime.csv")
+def get_all_movies() -> List[Movie]:
+    """
+    Get all movies from in cinema and premier.
+    """
+    in_cinema = get_movies(PRIME_NOW)
+    premieres = get_movies(PRIME_PREM, in_cinema=False)
+    return in_cinema + premieres
+
+
+def get_all_movies_titles() -> set[str]:
+    """
+    Get all movies titles from in cinema and premier.
+    """
+    in_cinema = get_movies_titles(PRIME_NOW)
+    premieres = get_movies_titles(PRIME_PREM)
+    return in_cinema | premieres
+
+
+# Verify if we already have the movies
+if file_exists(PRIM_OUTPUT):
+    if same_movies(get_all_movies_titles(), PRIM_OUTPUT):
+        print("No new movies for Prime cinemas")
+    else:
+        pydantic_to_csv(get_all_movies(), PRIM_OUTPUT)
+else:
+    # First time getting the movies
+    pydantic_to_csv(get_all_movies(), PRIM_OUTPUT)

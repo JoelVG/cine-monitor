@@ -1,9 +1,16 @@
-import requests
 from bs4 import BeautifulSoup
 from models.movie import Movie
 from typing import List
-from constants import SKYBOX_NOW, SKYBOX_PREM
-from utils import pydantic_to_csv, extract_time, clean_categories
+from constants import SKYBOX_NOW, SKYBOX_PREM, SKYBOX_OUTPUT
+from utils import (
+    pydantic_to_csv,
+    extract_time,
+    clean_categories,
+    file_exists,
+    same_movies,
+    get_movies_titles,
+    get_request,
+)
 
 
 def get_movies(url: str, in_cinema=True) -> List[Movie]:
@@ -11,7 +18,7 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     Get movies from a given URL.
     """
     movies = []
-    response = requests.get(url)
+    response = get_request(url)
     html_content = response.content
 
     soup = BeautifulSoup(html_content, "html.parser")
@@ -52,15 +59,30 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     return movies
 
 
-in_cinema = get_movies(SKYBOX_NOW)
-premieres = get_movies(SKYBOX_PREM, in_cinema=False)
-in_cinema.extend(premieres)
-pydantic_to_csv(in_cinema, "skybox.csv")
+def get_all_movies() -> List[Movie]:
+    """
+    Get all movies from in cinema and premier.
+    """
+    in_cinema = get_movies(SKYBOX_NOW)
+    premieres = get_movies(SKYBOX_PREM, in_cinema=False)
+    return in_cinema + premieres
 
-# print("In cinema movies: ")
-# for movie in in_cinema:
-#     print(movie)
-# print("**"*60)
-# print("Premieres: ")
-# for movie in premieres:
-#     print(movie)
+
+def get_all_movies_titles() -> set[str]:
+    """
+    Get all movies titles from in cinema and premier.
+    """
+    in_cinema = get_movies_titles(SKYBOX_NOW)
+    premieres = get_movies_titles(SKYBOX_PREM)
+    return in_cinema | premieres
+
+
+# Verify if we already have the movies
+if file_exists(SKYBOX_OUTPUT):
+    if same_movies(get_all_movies_titles(), SKYBOX_OUTPUT):
+        print("No new movies for Skybox")
+    else:
+        pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
+else:
+    # First time getting the movies
+    pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
