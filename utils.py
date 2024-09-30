@@ -1,10 +1,13 @@
 from pydantic import BaseModel
 from typing import List
-from constants import NOT_CATEGORIES
-from requests import get as requests_get
+from constants import NOT_CATEGORIES, DEFAULT_HEADERS
+from requests import get as request_get
+from http.client import RemoteDisconnected
+from urllib3.exceptions import ReadTimeoutError
+from time import sleep
 from bs4 import BeautifulSoup
+from os import path as os_path
 import csv
-import os
 
 
 def extract_time(time: str) -> str:
@@ -64,23 +67,37 @@ def file_exists(path: str) -> bool:
     """
     Check if a file exists.
     """
-    return os.path.isfile(path)
+    return os_path.isfile(path)
 
 
-def get_movies_titles(url: str, target: dict[str, str]) -> set[str]:
+def get_movies_titles(url: str) -> set[str]:
     """
     Get movies titles from a given URL.
     """
-    headers = {
-        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-    }
-    response = requests_get(url, headers=headers)
+    response = get_request(url, headers=DEFAULT_HEADERS)
     html_content = response.content
 
     soup = BeautifulSoup(html_content, "html.parser")
 
-    movies_ = soup.find(**target)
+    movies_ = soup.find(name="div", class_="list-content")
     return set(
         title.text.strip()
         for title in movies_.find_all(name="h2", class_="entry-title")
     )
+
+
+def get_request(url: str, headers: dict[str, str] = DEFAULT_HEADERS):
+    """
+    Make a GET request to a given URL and return the HTML content.
+    """
+    try:
+        # timeout = 120 because it is the max Skybox loading time
+        response = request_get(url, headers=headers, timeout=120)
+    except (ReadTimeoutError, RemoteDisconnected) as e:
+        print(f"----------------ERROR: {e.__annotations__}----------------")
+        sleep(5)
+        response = request_get(url, headers=headers, timeout=5)
+    if response.status_code == 200:
+        return response
+    else:
+        raise Exception(f"ERROR {response.status_code} making GET request to: {url}")

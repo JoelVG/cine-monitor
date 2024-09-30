@@ -11,16 +11,10 @@ NOT_CATEGORIES = ("en cartelera", "estrenos", "próximamente")
 SKYBOX_OUTPUT = "skybox.csv"
 PRIM_OUTPUT = "prime.csv"
 
-SKYBOX_TITLE_TARGET = {
-    "name": "div",
-    "class_": "list-content"
+# header to mimic a browser
+DEFAULT_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
 }
-
-PRIME_TITLE_TARGET = {
-    "name": "article",
-    "class_": "entry-item clearfix"
-}
-
 
 # MESSAGE_FORMAT = f"🎬 *{name}*\n" \
 #                    f"🕒 Duration: {duration}\n" \

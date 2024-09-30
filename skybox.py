@@ -1,8 +1,7 @@
-from requests import get as request_get
 from bs4 import BeautifulSoup
 from models.movie import Movie
 from typing import List
-from constants import SKYBOX_NOW, SKYBOX_PREM, SKYBOX_OUTPUT, SKYBOX_TITLE_TARGET
+from constants import SKYBOX_NOW, SKYBOX_PREM, SKYBOX_OUTPUT
 from utils import (
     pydantic_to_csv,
     extract_time,
@@ -10,6 +9,7 @@ from utils import (
     file_exists,
     same_movies,
     get_movies_titles,
+    get_request,
 )
 
 
@@ -18,12 +18,12 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     Get movies from a given URL.
     """
     movies = []
-    response = request_get(url)
+    response = get_request(url)
     html_content = response.content
 
     soup = BeautifulSoup(html_content, "html.parser")
 
-    movies_ = soup.find(name="div", class_=SKYBOX_TITLE_TARGET)
+    movies_ = soup.find(name="div", class_="list-content")
     print(f"Found {len(movies_)} movies!")
     for movie in movies_:
         skip_movie = False
@@ -72,8 +72,8 @@ def get_all_movies_titles() -> List[str]:
     """
     Get all movies titles from in cinema and premier.
     """
-    in_cinema = get_movies_titles(SKYBOX_NOW, SKYBOX_TITLE_TARGET)
-    premieres = get_movies_titles(SKYBOX_PREM, SKYBOX_TITLE_TARGET)
+    in_cinema = get_movies_titles(SKYBOX_NOW)
+    premieres = get_movies_titles(SKYBOX_PREM)
     return in_cinema | premieres
 
 
