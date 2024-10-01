@@ -5,16 +5,42 @@ from typing import Optional
 class Movie(BaseModel):
     title: str
     duration: Optional[str] = Field(default="")
-    actors: Optional[str] = Field(alias="Actor", default="")
-    director: Optional[str] = Field(alias="Director", default="")
-    category: Optional[str] = Field(validation_alias=AliasChoices("Género", "Genre"))
+    actors: Optional[str] = Field(
+        validation_alias=AliasChoices("Actor", "actors"), default=""
+    )
+    director: Optional[str] = Field(
+        validation_alias=AliasChoices("Director", "director"), default=""
+    )
+    category: Optional[str] = Field(
+        validation_alias=AliasChoices("Género", "Genre", "category"), default=""
+    )
     date: Optional[str] = Field(
-        validation_alias=AliasChoices("Estreno", "Release"), default=""
+        validation_alias=AliasChoices("Estreno", "Release", "date"), default=""
     )
     language: Optional[str] = Field(
-        validation_alias=AliasChoices("Idioma", "Language"), default=""
+        validation_alias=AliasChoices("Idioma", "Language", "language"), default=""
     )
     in_cinema: bool = True
+
+    def __str__(self) -> str:
+        print("🎞️" * 40)
+        message = f"🎬 *{self.title}*\n"
+
+        if self.duration:
+            message += f"🕒 Duration: {self.duration}:00\n"
+        if self.date:
+            message += f"📅 Release Date: {self.date}\n"
+        if self.director:
+            message += f"🎬 Director: {self.director}\n"
+        if self.actors:
+            message += f"🎭 Actors: {self.actors}\n"
+        if self.category:
+            message += f"🏷️ Category: {self.category}\n"
+        if self.language:
+            message += f"🗣️ Language: {self.language}\n"
+        message += f"🎟️ {'In Cinema' if self.in_cinema else 'Coming Soon'}\n"
+
+        return message.strip()
 
 
 # Actor:Eric Tsang

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import List
 from constants import NOT_CATEGORIES, DEFAULT_HEADERS
+from models.movie import Movie
 from requests import get as request_get
 from http.client import RemoteDisconnected
 from urllib3.exceptions import ReadTimeoutError
@@ -101,3 +102,21 @@ def get_request(url: str, headers: dict[str, str] = DEFAULT_HEADERS):
         return response
     else:
         raise Exception(f"ERROR {response.status_code} making GET request to: {url}")
+
+
+def get_movies_from_csv(csv_file: str) -> List[Movie]:
+    """
+    Extract movies from csv.
+    """
+    if file_exists(csv_file):
+        with open(csv_file, mode="r") as file:
+            reader = csv.DictReader(file)
+            movies = [Movie(**row) for row in reader]
+        return movies
+    else:
+        raise FileNotFoundError(f"File {csv_file} does not exist.")
+
+
+movies = get_movies_from_csv("skybox.csv")
+for m in movies:
+    print(str(m))
