@@ -23,7 +23,6 @@ class Movie(BaseModel):
     in_cinema: bool = True
 
     def __str__(self) -> str:
-        print("🎞️" * 40)
         message = f"🎬 *{self.title}*\n"
 
         if self.duration:
