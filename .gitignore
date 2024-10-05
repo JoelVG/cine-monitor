@@ -10,14 +10,6 @@ __pycache__
 !.vscode/extensions.json
 *.code-workspace
 
-# Local History for Visual Studio Code
-.history/
-
-### VisualStudioCode Patch ###
-# Ignore all local history of files
-.history
-.ionide
-
 # Support for Project snippet scope
 !.vscode/*.code-snippets
 
@@ -25,3 +17,7 @@ __pycache__
 .ruff_cache
 skybox.csv
 prime.csv
+.env
+
+#DB
+users.db

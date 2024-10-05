@@ -77,12 +77,13 @@ def get_all_movies_titles() -> set[str]:
     return in_cinema | premieres
 
 
-# Verify if we already have the movies
-if file_exists(SKYBOX_OUTPUT):
-    if same_movies(get_all_movies_titles(), SKYBOX_OUTPUT):
-        print("No new movies for Skybox")
+def get_skybox_movies():
+    # Verify if we already have the movies
+    if file_exists(SKYBOX_OUTPUT):
+        if same_movies(get_all_movies_titles(), SKYBOX_OUTPUT):
+            print("No new movies for Skybox")
+        else:
+            pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
     else:
+        # First time getting the movies
         pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
-else:
-    # First time getting the movies
-    pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
