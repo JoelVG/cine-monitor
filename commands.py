@@ -25,14 +25,15 @@ def get_movies() -> tuple[List[Movie], List[Movie]]:
 def run_command(command: str, user_: dict) -> None:
     if command in COMMANDS:
         user = User(**user_)
-        print(user)
 
         if command == "test":
             print(send_message(TEST_MESSAGE, user.chat_id))
         elif command == "add":
-            if user_db.read_user(user.chat_id) is None:
+            db_user = user_db.read_user(user.chat_id)
+            if db_user is None:
                 user_db.create_user(user)
                 send_message(f"Hola {user.username} 👤", user.chat_id)
+
                 prime_movies, skybox_movies = get_movies()
                 send_message("Peliculas de Prime: ", user.chat_id)
                 for movie in prime_movies:
@@ -40,10 +41,24 @@ def run_command(command: str, user_: dict) -> None:
                 send_message("Peliculas de Skybox: ", user.chat_id)
                 for movie in skybox_movies:
                     send_message(str(movie), user.chat_id)
-            else:
+
+            elif db_user.is_active:
                 send_message("Ya estas registrado! 👀", user.chat_id)
+
+            elif not db_user.is_active:
+                user_db.modify_user(user.chat_id, is_active=True)
+                send_message("Bienvenido de vuelta! 👻", user.chat_id)
+
+                prime_movies, skybox_movies = get_movies()
+                send_message("Peliculas de Prime: ", user.chat_id)
+                for movie in prime_movies:
+                    send_message(str(movie), user.chat_id)
+                send_message("Peliculas de Skybox: ", user.chat_id)
+                for movie in skybox_movies:
+                    send_message(str(movie), user.chat_id)
         elif command == "remove":
-            if user_db.read_user(user.chat_id) is not None:
+            db_user = user_db.read_user(user.chat_id)
+            if db_user.is_active:
                 user_db.modify_user(user.chat_id, is_active=False)
                 send_message("Adiós vaquero! 🎻", user.chat_id)
             else:
