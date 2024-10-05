@@ -37,11 +37,15 @@ def echo_all(updates):
         if update.get("message") is not None:
             if update.get("message", {}).get("text") is not None:
                 text = update["message"]["text"].lower().strip()
+                chat = update["message"]["chat"]
                 print("Mensaje recibido: ", text)
-                user = {
-                    "username": update["message"]["chat"]["username"],
-                    "chat_id": str(update["message"]["chat"]["id"])
-                }
+                print("Chat info: ", chat)
+                username = (
+                    chat["username"]
+                    if chat.get("username")
+                    else chat["first_name"] + " " + chat["last_name"]
+                )
+                user = {"username": username, "chat_id": str(chat["id"])}
                 run_command(text, user)
 
 
