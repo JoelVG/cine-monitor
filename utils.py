@@ -115,7 +115,6 @@ def get_movies_from_csv(csv_file: str) -> List[Movie]:
             movies = [Movie(**row) for row in reader]
         return movies
     else:
-        # TODO if not exists, get it!
         # raise FileNotFoundError(f"File {csv_file} does not exist.")
         print(f"File {csv_file} does not exist.")
         return None

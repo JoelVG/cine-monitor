@@ -14,7 +14,11 @@ def get_movies() -> tuple[List[Movie], List[Movie]]:
     get_skybox_movies()
     get_prime_movies()
     prime_movies = get_movies_from_csv(PRIM_OUTPUT)
+    if not prime_movies:
+        prime_movies = get_prime_movies()
     skybox_movies = get_movies_from_csv(SKYBOX_OUTPUT)
+    if not skybox_movies:
+        skybox_movies = get_skybox_movies()
     if prime_movies and skybox_movies:
         print("Movies loaded successfully")
         return prime_movies, skybox_movies
