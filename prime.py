@@ -73,12 +73,13 @@ def get_all_movies_titles() -> set[str]:
     return in_cinema | premieres
 
 
-# Verify if we already have the movies
-if file_exists(PRIM_OUTPUT):
-    if same_movies(get_all_movies_titles(), PRIM_OUTPUT):
-        print("No new movies for Prime cinemas")
+def get_prime_movies() -> None:
+    # Verify if we already have the movies
+    if file_exists(PRIM_OUTPUT):
+        if same_movies(get_all_movies_titles(), PRIM_OUTPUT):
+            print("No new movies for Prime cinemas")
+        else:
+            pydantic_to_csv(get_all_movies(), PRIM_OUTPUT)
     else:
+        # First time getting the movies
         pydantic_to_csv(get_all_movies(), PRIM_OUTPUT)
-else:
-    # First time getting the movies
-    pydantic_to_csv(get_all_movies(), PRIM_OUTPUT)

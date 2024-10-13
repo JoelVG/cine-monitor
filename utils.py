@@ -1,12 +1,14 @@
 from pydantic import BaseModel
 from typing import List
-from constants import NOT_CATEGORIES, DEFAULT_HEADERS
+from constants import NOT_CATEGORIES, DEFAULT_HEADERS, BOT_URL
+from models.movie import Movie
 from requests import get as request_get
 from http.client import RemoteDisconnected
 from urllib3.exceptions import ReadTimeoutError
 from time import sleep
 from bs4 import BeautifulSoup
 from os import path as os_path
+from urllib.parse import quote_plus
 import csv
 
 
@@ -101,3 +103,40 @@ def get_request(url: str, headers: dict[str, str] = DEFAULT_HEADERS):
         return response
     else:
         raise Exception(f"ERROR {response.status_code} making GET request to: {url}")
+
+
+def get_movies_from_csv(csv_file: str) -> List[Movie]:
+    """
+    Extract movies from csv.
+    """
+    if file_exists(csv_file):
+        with open(csv_file, mode="r") as file:
+            reader = csv.DictReader(file)
+            movies = [Movie(**row) for row in reader]
+        return movies
+    else:
+        # raise FileNotFoundError(f"File {csv_file} does not exist.")
+        print(f"File {csv_file} does not exist.")
+        return None
+
+
+def send_message(text: str, chat_id: str):
+    txt = quote_plus(text)
+    url = BOT_URL + "sendMessage?text={}&chat_id={}".format(txt, chat_id)
+    get_url(url)
+
+    # url = f"{BOT_URL}/sendMessage"
+    # payload = {"text": text, "chat_id": chat_id}
+    # response = request_get(url, params=payload)
+    # return response.text
+
+
+def get_url(url: str) -> str:
+    response = request_get(url)
+    content = response.content.decode("utf8")
+    return content
+
+
+# movies = get_movies_from_csv("skybox.csv")
+# for m in movies:
+#     print(str(m))
