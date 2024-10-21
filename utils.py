@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from os import path as os_path
 from urllib.parse import quote_plus
 import csv
+import time
 
 
 def extract_time(time: str) -> str:
@@ -117,7 +118,7 @@ def get_movies_from_csv(csv_file: str) -> List[Movie]:
     else:
         # raise FileNotFoundError(f"File {csv_file} does not exist.")
         print(f"File {csv_file} does not exist.")
-        return None
+        return []
 
 
 def send_message(text: str, chat_id: str):
@@ -137,6 +138,19 @@ def get_url(url: str) -> str:
     return content
 
 
-# movies = get_movies_from_csv("skybox.csv")
-# for m in movies:
-#     print(str(m))
+def get_file_modified_date(file_path: str) -> float:
+    """
+    Get the modified date of a file.
+    """
+    creation_time = os_path.getmtime(file_path)
+    return creation_time
+
+
+def is_older_than_two_days(file_path: str) -> bool:
+    """
+    Check if a file is older than two days.
+    """
+    creation_time = get_file_modified_date(file_path)
+    current_time = time.time()
+    two_days_ago = current_time - (48 * 3600)  # 2 days in seconds H*S
+    return creation_time < two_days_ago
