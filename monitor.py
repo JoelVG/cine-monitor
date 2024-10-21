@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Script to monitor new movies and send it to subscribers
 
 from prime import get_prime_movies

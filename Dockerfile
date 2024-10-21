@@ -1,7 +1,7 @@
 FROM python:3.10-slim-buster
 
 # Install cron
-RUN apt-get update && apt-get install -y cron && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y cron
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY . .
 
 # Give execution rights on the cron script
-RUN chmod 0644 /app/scheduler/scheduler.sh
+RUN chmod +x /app/scheduler/scheduler.sh
 
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log

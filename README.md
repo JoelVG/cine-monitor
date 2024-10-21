@@ -18,6 +18,8 @@ Comandos disponibles que escucha el bot
 
 
 # Docker
-`docker build -t cine-monitor .`
-`docker run -d --name cine-monitor-container cine-monitor`
-`docker exec -it cine-monitor-container /bin/bash`
+`docker build -t cine-monitor .`  
+`docker run -d --name cine-monitor-container cine-monitor`  
+`docker exec -it cine-monitor-container /bin/bash`  
+
+> Los archivos generados por `monitor.py`se guardan en ./root/  
