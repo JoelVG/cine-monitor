@@ -10,6 +10,7 @@ from utils import (
     same_movies,
     get_movies_titles,
     get_request,
+    is_older_than_two_days,
 )
 
 
@@ -75,7 +76,7 @@ def get_all_movies_titles() -> set[str]:
 
 def get_prime_movies() -> None:
     # Verify if we already have the movies
-    if file_exists(PRIM_OUTPUT):
+    if file_exists(PRIM_OUTPUT) and not is_older_than_two_days(PRIM_OUTPUT):
         if same_movies(get_all_movies_titles(), PRIM_OUTPUT):
             print("No new movies for Prime cinemas")
         else:

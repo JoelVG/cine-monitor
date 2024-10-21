@@ -64,5 +64,19 @@ class UserCRUD:
         self.cursor.execute("DELETE FROM users WHERE chat_id = ?", (chat_id,))
         self.conn.commit()
 
+    def get_active_users(self):
+        self.cursor.execute("SELECT * FROM users WHERE is_active =? ", (int(True),))
+        users_data = self.cursor.fetchall()
+        return [
+            User(
+                username=user_data[0],
+                chat_id=user_data[1],
+                is_active=bool(user_data[2]),
+                created_at=user_data[3],
+                updated_at=user_data[4],
+            )
+            for user_data in users_data
+        ]
+
     def close_connection(self):
         self.conn.close()

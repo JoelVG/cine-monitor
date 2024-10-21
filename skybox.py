@@ -10,6 +10,7 @@ from utils import (
     same_movies,
     get_movies_titles,
     get_request,
+    is_older_than_two_days,
 )
 
 
@@ -79,7 +80,7 @@ def get_all_movies_titles() -> set[str]:
 
 def get_skybox_movies():
     # Verify if we already have the movies
-    if file_exists(SKYBOX_OUTPUT):
+    if file_exists(SKYBOX_OUTPUT) and not is_older_than_two_days(SKYBOX_OUTPUT):
         if same_movies(get_all_movies_titles(), SKYBOX_OUTPUT):
             print("No new movies for Skybox")
         else:
