@@ -10,6 +10,7 @@ from constants import SKYBOX_OUTPUT, PRIM_OUTPUT
 user_db = UserCRUD()
 
 
+# TODO call new async functions
 def main():
     # Getting movies
     get_prime_movies()

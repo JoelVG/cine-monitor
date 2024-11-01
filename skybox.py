@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
-from models.movie import Movie
 from typing import List
+import asyncio
+from models.movie import Movie
 from constants import SKYBOX_NOW, SKYBOX_PREM, SKYBOX_OUTPUT
 from utils import (
     pydantic_to_csv,
@@ -9,18 +10,17 @@ from utils import (
     file_exists,
     same_movies,
     get_movies_titles,
-    get_request,
     is_older_than_two_days,
+    async_get_request,
 )
 
 
-def get_movies(url: str, in_cinema=True) -> List[Movie]:
+async def get_movies(url: str, in_cinema=True) -> List[Movie]:
     """
     Get movies from a given URL.
     """
     movies = []
-    response = get_request(url)
-    html_content = response.content
+    html_content = await async_get_request(url)
 
     soup = BeautifulSoup(html_content, "html.parser")
 
@@ -60,31 +60,39 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     return movies
 
 
-def get_all_movies() -> List[Movie]:
+async def get_all_movies() -> List[Movie]:
     """
     Get all movies from in cinema and premier.
     """
-    in_cinema = get_movies(SKYBOX_NOW)
-    premieres = get_movies(SKYBOX_PREM, in_cinema=False)
-    return in_cinema + premieres
+    in_cinema, premiers = await asyncio.gather(
+        get_movies(SKYBOX_NOW), get_movies(SKYBOX_PREM, in_cinema=False)
+    )
+    return in_cinema + premiers
 
 
-def get_all_movies_titles() -> set[str]:
+async def get_all_movies_titles() -> set[str]:
     """
     Get all movies titles from in cinema and premier.
     """
-    in_cinema = get_movies_titles(SKYBOX_NOW)
-    premieres = get_movies_titles(SKYBOX_PREM)
+    in_cinema, premieres = await asyncio.gather(
+        get_movies_titles(SKYBOX_NOW), get_movies_titles(SKYBOX_PREM)
+    )
     return in_cinema | premieres
 
 
-def get_skybox_movies():
+async def get_skybox_movies():
     # Verify if we already have the movies
     if file_exists(SKYBOX_OUTPUT) and not is_older_than_two_days(SKYBOX_OUTPUT):
-        if same_movies(get_all_movies_titles(), SKYBOX_OUTPUT):
+        if await same_movies(await get_all_movies_titles(), SKYBOX_OUTPUT):
             print("No new movies for Skybox")
         else:
-            pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
+            movies = await get_all_movies()
+            pydantic_to_csv(movies, SKYBOX_OUTPUT)
     else:
         # First time getting the movies
-        pydantic_to_csv(get_all_movies(), SKYBOX_OUTPUT)
+        movies = await get_all_movies()
+        pydantic_to_csv(movies, SKYBOX_OUTPUT)
+
+
+# if __name__ == "__main__":
+#     asyncio.run(get_skybox_movies())

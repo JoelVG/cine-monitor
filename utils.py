@@ -5,6 +5,7 @@ from models.movie import Movie
 from requests import get as request_get
 from http.client import RemoteDisconnected
 from urllib3.exceptions import ReadTimeoutError
+import aiohttp
 from time import sleep
 from bs4 import BeautifulSoup
 from os import path as os_path
@@ -154,3 +155,9 @@ def is_older_than_two_days(file_path: str) -> bool:
     current_time = time.time()
     two_days_ago = current_time - (48 * 3600)  # 2 days in seconds H*S
     return creation_time < two_days_ago
+
+
+async def async_get_request(url: str, headers: dict[str, str] = DEFAULT_HEADERS) -> str:
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url) as response:
+            return await response.text()
