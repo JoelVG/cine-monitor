@@ -21,5 +21,13 @@ Comandos disponibles que escucha el bot
 `docker build -t cine-monitor .`  
 `docker run -d --name cine-monitor-container cine-monitor`  
 `docker exec -it cine-monitor-container /bin/bash`  
+> Los archivos generados por `monitor.py`se guardan en *./root/*  
 
-> Los archivos generados por `monitor.py`se guardan en ./root/  
+
+# Crontab
+`crontab -l` # listas los cronjobs activos  
+`crontab -e` # editas el archivo de cronjobs  
+
+
+# Docs
+[Telegram Bot API](https://core.telegram.org/bots/api)
