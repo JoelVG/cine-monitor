@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # Script to monitor new movies and send it to subscribers
+import asyncio
 
 from prime import get_prime_movies
 from skybox import get_skybox_movies
@@ -10,11 +11,13 @@ from constants import SKYBOX_OUTPUT, PRIM_OUTPUT
 user_db = UserCRUD()
 
 
-# TODO call new async functions
-def main():
+async def get_movies():
+    await asyncio.gather(get_prime_movies(), get_skybox_movies())
+
+
+async def main():
     # Getting movies
-    get_prime_movies()
-    get_skybox_movies()
+    await get_movies()
     prime_movies = get_movies_from_csv(PRIM_OUTPUT)
     skybox_movies = get_movies_from_csv(SKYBOX_OUTPUT)
 
@@ -26,11 +29,13 @@ def main():
     else:
         # Sending movies to subscribers
         for user_ in users:
+            send_message("PRIME MOVIES", user_.chat_id)
             for pmovie in prime_movies:
                 send_message(str(pmovie), user_.chat_id)
+            send_message("SKYBOX MOVIES", user_.chat_id)
             for smovie in skybox_movies:
                 send_message(str(smovie), user_.chat_id)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
