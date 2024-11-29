@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
-from models.movie import Movie
 from typing import List
+import asyncio
+from models.movie import Movie
 from constants import PRIME_NOW, PRIME_PREM, PRIM_OUTPUT
 from utils import (
     pydantic_to_csv,
@@ -9,18 +10,18 @@ from utils import (
     file_exists,
     same_movies,
     get_movies_titles,
-    get_request,
     is_older_than_two_days,
+    async_get_request,
 )
+from functools import partial
 
 
-def get_movies(url: str, in_cinema=True) -> List[Movie]:
+async def get_movies(url: str, in_cinema=True) -> List[Movie]:
     """
     Get movies from a given URL.
     """
     movies = []
-    response = get_request(url)
-    html_content = response.content
+    html_content = await async_get_request(url)
 
     soup = BeautifulSoup(html_content, "html.parser")
     movies_ = soup.find_all(name="article", class_="entry-item clearfix")
@@ -56,31 +57,42 @@ def get_movies(url: str, in_cinema=True) -> List[Movie]:
     return movies
 
 
-def get_all_movies() -> List[Movie]:
+async def get_all_movies() -> List[Movie]:
     """
     Get all movies from in cinema and premier.
     """
-    in_cinema = get_movies(PRIME_NOW)
-    premieres = get_movies(PRIME_PREM, in_cinema=False)
+    in_cinema, premieres = await asyncio.gather(
+        get_movies(PRIME_NOW), get_movies(PRIME_PREM, in_cinema=False)
+    )
     return in_cinema + premieres
 
 
-def get_all_movies_titles() -> set[str]:
+async def get_all_movies_titles() -> set[str]:
     """
     Get all movies titles from in cinema and premier.
     """
-    in_cinema = get_movies_titles(PRIME_NOW)
-    premieres = get_movies_titles(PRIME_PREM)
-    return in_cinema | premieres
+    loop = asyncio.get_event_loop()
+    in_cinema, premieres = await asyncio.gather(
+        loop.run_in_executor(None, partial(get_movies_titles, PRIME_NOW)),
+        loop.run_in_executor(None, partial(get_movies_titles, PRIME_PREM)),
+    )
+    return set(in_cinema) | set(premieres)
 
 
-def get_prime_movies() -> None:
+async def get_prime_movies() -> None:
     # Verify if we already have the movies
     if file_exists(PRIM_OUTPUT) and not is_older_than_two_days(PRIM_OUTPUT):
-        if same_movies(get_all_movies_titles(), PRIM_OUTPUT):
+        movie_titles = await get_all_movies_titles()
+        if same_movies(movie_titles, PRIM_OUTPUT):
             print("No new movies for Prime cinemas")
         else:
-            pydantic_to_csv(get_all_movies(), PRIM_OUTPUT)
+            movies = await get_all_movies()
+            pydantic_to_csv(movies, PRIM_OUTPUT)
     else:
         # First time getting the movies
-        pydantic_to_csv(get_all_movies(), PRIM_OUTPUT)
+        movies = await get_all_movies()
+        pydantic_to_csv(movies, PRIM_OUTPUT)
+
+
+if __name__ == "__main__":
+    asyncio.run(get_prime_movies())

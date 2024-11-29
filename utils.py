@@ -74,7 +74,7 @@ def file_exists(path: str) -> bool:
     return os_path.isfile(path)
 
 
-def get_movies_titles(url: str) -> set[str]:
+def get_movies_titles(url: str) -> List[str]:
     """
     Get movies titles from a given URL.
     """
@@ -84,10 +84,10 @@ def get_movies_titles(url: str) -> set[str]:
     soup = BeautifulSoup(html_content, "html.parser")
 
     movies_ = soup.find(name="div", class_="list-content")
-    return set(
+    return [
         title.text.strip()
         for title in movies_.find_all(name="h2", class_="entry-title")
-    )
+    ]
 
 
 def get_request(url: str, headers: dict[str, str] = DEFAULT_HEADERS):

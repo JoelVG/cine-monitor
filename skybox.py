@@ -13,6 +13,7 @@ from utils import (
     is_older_than_two_days,
     async_get_request,
 )
+from functools import partial
 
 
 async def get_movies(url: str, in_cinema=True) -> List[Movie]:
@@ -74,16 +75,20 @@ async def get_all_movies_titles() -> set[str]:
     """
     Get all movies titles from in cinema and premier.
     """
+    loop = asyncio.get_event_loop()
+    # MODIFY LIKE PRIME CINEMAS
     in_cinema, premieres = await asyncio.gather(
-        get_movies_titles(SKYBOX_NOW), get_movies_titles(SKYBOX_PREM)
+        loop.run_in_executor(None, partial(get_movies_titles, SKYBOX_NOW)),
+        loop.run_in_executor(None, partial(get_movies_titles, SKYBOX_PREM)),
     )
-    return in_cinema | premieres
+    return set(in_cinema) | set(premieres)
 
 
-async def get_skybox_movies():
+async def get_skybox_movies() -> None:
     # Verify if we already have the movies
     if file_exists(SKYBOX_OUTPUT) and not is_older_than_two_days(SKYBOX_OUTPUT):
-        if await same_movies(await get_all_movies_titles(), SKYBOX_OUTPUT):
+        movies_titles = await get_all_movies_titles()
+        if same_movies(movies_titles, SKYBOX_OUTPUT):
             print("No new movies for Skybox")
         else:
             movies = await get_all_movies()
@@ -94,5 +99,5 @@ async def get_skybox_movies():
         pydantic_to_csv(movies, SKYBOX_OUTPUT)
 
 
-# if __name__ == "__main__":
-#     asyncio.run(get_skybox_movies())
+if __name__ == "__main__":
+    asyncio.run(get_skybox_movies())
