@@ -18,6 +18,7 @@ __pycache__
 skybox.csv
 prime.csv
 .env
+monitor.log
 
 #DB
 users.db

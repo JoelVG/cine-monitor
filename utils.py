@@ -5,11 +5,13 @@ from models.movie import Movie
 from requests import get as request_get
 from http.client import RemoteDisconnected
 from urllib3.exceptions import ReadTimeoutError
+import aiohttp
 from time import sleep
 from bs4 import BeautifulSoup
 from os import path as os_path
 from urllib.parse import quote_plus
 import csv
+import time
 
 
 def extract_time(time: str) -> str:
@@ -72,7 +74,7 @@ def file_exists(path: str) -> bool:
     return os_path.isfile(path)
 
 
-def get_movies_titles(url: str) -> set[str]:
+def get_movies_titles(url: str) -> List[str]:
     """
     Get movies titles from a given URL.
     """
@@ -82,10 +84,10 @@ def get_movies_titles(url: str) -> set[str]:
     soup = BeautifulSoup(html_content, "html.parser")
 
     movies_ = soup.find(name="div", class_="list-content")
-    return set(
+    return [
         title.text.strip()
         for title in movies_.find_all(name="h2", class_="entry-title")
-    )
+    ]
 
 
 def get_request(url: str, headers: dict[str, str] = DEFAULT_HEADERS):
@@ -117,7 +119,7 @@ def get_movies_from_csv(csv_file: str) -> List[Movie]:
     else:
         # raise FileNotFoundError(f"File {csv_file} does not exist.")
         print(f"File {csv_file} does not exist.")
-        return None
+        return []
 
 
 def send_message(text: str, chat_id: str):
@@ -137,6 +139,25 @@ def get_url(url: str) -> str:
     return content
 
 
-# movies = get_movies_from_csv("skybox.csv")
-# for m in movies:
-#     print(str(m))
+def get_file_modified_date(file_path: str) -> float:
+    """
+    Get the modified date of a file.
+    """
+    creation_time = os_path.getmtime(file_path)
+    return creation_time
+
+
+def is_older_than_two_days(file_path: str) -> bool:
+    """
+    Check if a file is older than two days.
+    """
+    creation_time = get_file_modified_date(file_path)
+    current_time = time.time()
+    two_days_ago = current_time - (48 * 3600)  # 2 days in seconds H*S
+    return creation_time < two_days_ago
+
+
+async def async_get_request(url: str, headers: dict[str, str] = DEFAULT_HEADERS) -> str:
+    async with aiohttp.ClientSession(headers=headers) as session:
+        async with session.get(url) as response:
+            return await response.text()

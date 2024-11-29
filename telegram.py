@@ -7,22 +7,19 @@ from constants import BOT_URL
 
 def get_url(url: str) -> str:
     response = requests.get(url)
-    content = response.content.decode("utf8")
-    return content
+    return response.content.decode("utf8")
 
 
 def get_json_from_url(url: str):
     content = get_url(url)
-    js = json.loads(content)
-    return js
+    return json.loads(content)
 
 
 def get_updates(offset=None):
     url = BOT_URL + "getUpdates?timeout=100"
     if offset:
         url += "&offset={}".format(offset)
-    js = get_json_from_url(url)
-    return js
+    return get_json_from_url(url)
 
 
 def get_last_update_id(updates):
@@ -60,9 +57,12 @@ def main():
     while True:
         updates = get_updates(last_update_id)
         if updates is not None:
-            if len(updates["result"]) > 0:
+            if len(updates.get("result", [])) > 0:
                 last_update_id = get_last_update_id(updates) + 1
                 echo_all(updates)
+            # Maybe you forgot to export your BOT TOKEN to .env
+            elif updates.get("ok") is False:
+                break
 
 
 if __name__ == "__main__":
