@@ -31,3 +31,4 @@ Comandos disponibles que escucha el bot
 
 # Docs
 [Telegram Bot API](https://core.telegram.org/bots/api)
+[pre-commit](https://pre-commit.com/)

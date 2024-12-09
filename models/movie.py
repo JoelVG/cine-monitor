@@ -1,5 +1,29 @@
-from pydantic import BaseModel, Field, AliasChoices
+from pydantic import BaseModel, Field, AliasChoices, validator
 from typing import Optional
+
+from constants import NOT_CATEGORIES
+
+
+def extract_time(time: str) -> str:
+    """
+    Extract the time from a string from format:
+    01 hours 46 minutes to "HH:MM".
+    """
+    text = time.split(" ")
+    if len(text) == 1:  # It already comes with the HH:MM format
+        return time
+    h = int(text[0])
+    m = int(text[2])
+    return f"{h:02d}:{m:02d}"
+
+
+def clean_categories(text: str) -> str:
+    """
+    Remove banned words category.
+    """
+    return ", ".join(
+        word.strip() for word in text.split(",") if word.strip() not in NOT_CATEGORIES
+    ).strip()
 
 
 class Movie(BaseModel):
@@ -22,6 +46,18 @@ class Movie(BaseModel):
     )
     in_cinema: bool = True
 
+    @validator("duration")
+    def format_duration(cls, duration: str) -> str:
+        if duration:
+            return extract_time(duration)
+        return duration
+
+    @validator("category")
+    def format_category(cls, category: str) -> str:
+        if category:
+            return clean_categories(category.lower())
+        return category
+
     def __str__(self) -> str:
         message = f"🎬 *{self.title}*\n"
 
@@ -40,18 +76,3 @@ class Movie(BaseModel):
         message += f"🎟️ {'In Cinema' if self.in_cinema else 'Coming Soon'}\n"
 
         return message.strip()
-
-
-# Actor:Eric Tsang
-# Director:Yu Wang, Shixing Xu
-# Género:Drama, En cartelera, Estrenos
-# Estreno:12 septiembre, 2024
-# Idioma:DOBLADO AL ESPAÑO
-
-# Actor:Brendan Gleeson, Catherine Keener, Harry Lawtey, Jacob Lofland
-# Director:Todd Phillips
-# Genre:Drama, Musical, Preventa, Próximamente, Suspenso
-# Release:3 octubre, 2024
-# Language:Doblada, Subtitulada
-# Imdb:Mayores de 14 años
-# Cinema:2D ATMOS – Subtitulada, 2D ATMOS – Doblada, 2D Normal
