@@ -1,6 +1,7 @@
 import json
 import requests
 import urllib
+import asyncio
 
 from constants import BOT_URL
 
@@ -27,7 +28,7 @@ def get_last_update_id(updates):
     return max(update_ids)
 
 
-def echo_all(updates):
+async def echo_all(updates):
     from commands import run_command
 
     for update in updates["result"]:
@@ -43,7 +44,7 @@ def echo_all(updates):
                     else chat["first_name"] + " " + chat["last_name"]
                 )
                 user = {"username": username, "chat_id": str(chat["id"])}
-                run_command(text, user)
+                await run_command(text, user)
 
 
 def send_message(text: str, chat_id: str):
@@ -52,18 +53,18 @@ def send_message(text: str, chat_id: str):
     get_url(url)
 
 
-def main():
+async def main():
     last_update_id = None
     while True:
         updates = get_updates(last_update_id)
         if updates is not None:
             if len(updates.get("result", [])) > 0:
                 last_update_id = get_last_update_id(updates) + 1
-                echo_all(updates)
+                await echo_all(updates)
             # Maybe you forgot to export your BOT TOKEN to .env
             elif updates.get("ok") is False:
                 break
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
