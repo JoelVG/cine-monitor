@@ -5,8 +5,6 @@ from models.movie import Movie
 from constants import PRIME_NOW, PRIME_PREM, PRIM_OUTPUT
 from utils import (
     pydantic_to_csv,
-    extract_time,
-    clean_categories,
     file_exists,
     same_movies,
     get_movies_titles,
@@ -43,14 +41,11 @@ async def get_movies(url: str, in_cinema=True) -> List[Movie]:
                 if info.label.text != "Cinema:"
             }
             movie_info["title"] = title
-            # TODO add as validator model for duration field
             duration = movie.find(name="span", class_="duration")
             if duration:
-                movie_info["duration"] = extract_time(duration.text.strip())
+                movie_info["duration"] = duration.text.strip()
             movie_info["in_cinema"] = in_cinema
             m = Movie(**movie_info)
-            if m.category:
-                m.category = clean_categories(m.category.lower()).strip()
             movies.append(m)
         else:
             break

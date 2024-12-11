@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from constants import NOT_CATEGORIES, DEFAULT_HEADERS, BOT_URL
+from constants import DEFAULT_HEADERS, BOT_URL
 from models.movie import Movie
 from requests import get as request_get
 from http.client import RemoteDisconnected
@@ -12,17 +12,6 @@ from os import path as os_path
 from urllib.parse import quote_plus
 import csv
 import time
-
-
-def extract_time(time: str) -> str:
-    """
-    Extract the time from a string from format:
-    01 hours 46 minutes to "HH:MM".
-    """
-    text = time.split(" ")
-    h = int(text[0])
-    m = int(text[2])
-    return f"{h:02d}:{m:02d}"
 
 
 def pydantic_to_csv(data: List[BaseModel], filename: str):
@@ -44,15 +33,6 @@ def pydantic_to_csv(data: List[BaseModel], filename: str):
             writer.writerow(obj.model_dump())
 
     print(f"CSV file '{filename}' has been created successfully.")
-
-
-def clean_categories(text: str) -> str:
-    """
-    Remove banned words category.
-    """
-    return ", ".join(
-        word.strip() for word in text.split(",") if word.strip() not in NOT_CATEGORIES
-    )
 
 
 def same_movies(movies: set[str], cine: str) -> bool:

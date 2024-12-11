@@ -5,8 +5,6 @@ from models.movie import Movie
 from constants import SKYBOX_NOW, SKYBOX_PREM, SKYBOX_OUTPUT
 from utils import (
     pydantic_to_csv,
-    extract_time,
-    clean_categories,
     file_exists,
     same_movies,
     get_movies_titles,
@@ -41,19 +39,14 @@ async def get_movies(url: str, in_cinema=True) -> List[Movie]:
                 )
             }
             movie_info["title"] = title
-            # TODO add as validator model for duration field
-            movie_info["duration"] = extract_time(
-                movie.find(name="span", class_="duration").text.strip()
-            )
+            movie_info["duration"] = movie.find(
+                name="span", class_="duration"
+            ).text.strip()
             movie_info["in_cinema"] = in_cinema
             m = Movie(**movie_info)
             if m.category:
-                # TODO improve >> avoid adding movies currently in cinema to premiers
                 if "En cartelera" in m.category and not in_cinema:
                     skip_movie = True
-                else:
-                    # TODO add as validator model for category field
-                    m.category = clean_categories(m.category.lower()).strip()
             if not skip_movie:
                 movies.append(m)
         else:

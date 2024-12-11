@@ -22,7 +22,7 @@ DEFAULT_HEADERS = {
 }
 
 BOT_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/"
-COMMANDS = ("test", "add", "remove", "set")
+COMMANDS = ("test", "add", "remove", "set", "prime", "skybox")
 
 TEST_MESSAGE = """
 Hola, soy un bot de cine 🤖\n
@@ -33,4 +33,6 @@ Mis comandos disponibles son:\n
 test - Prueba el bot\n
 add - Te añades a la lista de notificaciones\n
 remove - Te eliminas de la lista de notificaciones\n
+prime - Ver las peliculas de Prime Cinemas\n
+skybox - Ver las peliculas de Skybox\n
 """
