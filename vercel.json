@@ -10,5 +10,10 @@
       "src": "/(.*)",
       "dest": "api/app.py"
     }
-  ]
+  ],
+  "functions": {
+    "**/*.py": {
+      "runtime": "python3.10"
+    }
+  }
 }
