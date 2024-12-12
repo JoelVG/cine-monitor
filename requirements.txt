@@ -4,3 +4,4 @@ pre-commit
 requests
 asyncio
 aiohttp
+fastapi
