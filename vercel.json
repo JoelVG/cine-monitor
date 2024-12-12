@@ -2,7 +2,10 @@
   "builds": [
     {
       "src": "api/app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.10"
+      }
     }
   ],
   "routes": [
@@ -10,10 +13,5 @@
       "src": "/(.*)",
       "dest": "api/app.py"
     }
-  ],
-  "functions": {
-    "**/*.py": {
-      "runtime": "python3.10"
-    }
-  }
+  ]
 }
