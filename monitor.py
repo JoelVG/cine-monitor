@@ -2,8 +2,7 @@
 # Script to monitor new movies and send it to subscribers
 import asyncio
 
-from prime import get_prime_movies
-from skybox import get_skybox_movies
+from scraper import scrape_cinemas
 from utils import get_movies_from_csv, send_message
 from user import UserCRUD
 from constants import SKYBOX_OUTPUT, PRIM_OUTPUT
@@ -12,14 +11,14 @@ user_db = UserCRUD()
 
 
 async def get_movies():
-    await asyncio.gather(get_prime_movies(), get_skybox_movies())
+    return await scrape_cinemas()
 
 
 async def main():
     # Getting movies
-    await get_movies()
-    prime_movies = get_movies_from_csv(PRIM_OUTPUT)
-    skybox_movies = get_movies_from_csv(SKYBOX_OUTPUT)
+    movies = await get_movies()
+    prime_movies = movies.get("prime", [])
+    skybox_movies = movies.get("skybox", [])
 
     # Getting users
     users = user_db.get_active_users()
